@@ -24,6 +24,32 @@ TODO: Test the lesson
 
 TODO: Pre-write the analysis script
 
+# Setup
+
+Learners should install to their computers, or be provided with computers
+that have:
+
+-   A `bash` terminal
+-   The following programs
+    -   `head`
+    -   `nano`
+    -   `make`
+    -   `dot`
+-   Python 3.5+ and the following packages
+    -   snakemake
+    -   matplotlib
+    -   numpy
+-   In the working directory a file named `matplotlibrc` containing just one
+    line:
+
+    ```
+    backend:agg
+    ```
+-   The scripts `plotcount.py` and `wordcount.py`.
+-   And a directory `books/` containing `abyss.txt`, `isles.txt`, `last.txt`,
+    and `sierra.txt`.
+-   A pre-written shell script `analysis.sh`.
+
 # Motivation
 
 ## Zipf's Law [5 minutes]
