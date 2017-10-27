@@ -22,7 +22,7 @@ author: Byron J. Smith
 
 TODO: Test the lesson
 
-# Setup
+# Setup [0 minutes]
 
 Learners should install to their computers, or be provided with computers
 that have:
@@ -50,7 +50,7 @@ that have:
 
 # Motivation
 
-## Zipf's Law [5 minutes]
+## Zipf's Law [10 minutes]
 
 > The most frequently-occurring word occurs approximately twice as
 > often as the second most frequent word. This is
@@ -59,14 +59,15 @@ that have:
 Let's imagine that instead of computational biology we're interested in
 testing Zipf's law in some of our favorite books.
 We've compiled our raw data, the books we want to analyze
-(check out `head books/isles.txt`)
 and have prepared several Python scripts that together make up our
 analysis pipeline.
 
 The `tree` command produces a handy tree-diagram of the directory.
+(You may not have this program installed on your computer.)
 
 ```
 .
+├── analysis.sh
 ├── books
 │   ├── LICENSE_TEXTS.md
 │   ├── abyss.txt
@@ -75,7 +76,6 @@ The `tree` command produces a handy tree-diagram of the directory.
 │   └── sierra.txt
 ├── matplotlibrc
 └── scripts
-    ├── analysis.sh
     ├── plotcount.py
     └── wordcount.py
 
@@ -86,7 +86,13 @@ Here you see that we're starting with a well designed project directory.
 The raw data (books) are stored in their own directory, and scripts have
 informative names.
 
-The first step is to count the frequency of each word in a book.
+Let's take a look at our raw data
+
+```bash
+head books/isles.txt
+```
+
+Our first step is to count the frequency of each word in a book.
 
 ```bash
 scripts/wordcount.py books/isles.txt isles.tsv
@@ -129,7 +135,7 @@ The `ascii` argument has been added so that we get a text-based
 bar-plot printed to the screen.
 
 The script is also able to render a graphical bar-plot using matplotlib
-and save the figure to a given file.
+and save the figure to a named file.
 
 ```bash
 scripts/plotcount.py isles.tsv isles.png
@@ -141,11 +147,11 @@ Together these scripts implement a common workflow:
 2.  Perform an analysis on this data file.
 3.  Write the analysis results to a new file.
 4.  Plot a graph of the analysis results.
-5.  Save the graph as an image, so we can put it in a paper.
+5.  Save the graph as an image, so we can publish it.
 
-## Writing a script to do our analysis [10 minutes]
+## Writing a script to do our analysis [5 minutes]
 
-Running this pipeline for one book is pretty easy using the command-line.
+Running this pipeline for one book is relatively simple using the command-line.
 But once the number of files and the number of steps in the pipeline
 expands, this can turn into a lot of work.
 Plus, no one wants to sit and wait for a command to finish, even just for 30
@@ -190,18 +196,12 @@ This master script solved several problems in computational reproducibility:
 A master script is a good start, but it has a few shortcomings.
 
 Let's imagine that we adjusted the width of the bars in our plot
-produced by `plotcount.py`.
-
-```bash
-nano scripts/plotcount.py
-# In the definition of plot_word_counts replace:
-#    width = 1.0
-# with:
-#    width = 0.8
-```
+by editing `scripts/plotcount.py`;
+in the function definition for
+`plot_word_counts`, `width = 1.0` is now `width = 0.8`.
 
 Now we want to recreate our figures.
-We _could_ just `bash analysis.sh` again.
+We _could_ `bash analysis.sh` again.
 That would work, but it could also be a big pain if counting words takes
 more than a few seconds.
 The word counting routine hasn't changed; we shouldn't need to recreate
@@ -222,7 +222,7 @@ tar -czf zipf_results.tgz zipf_results
 rm -r zipf_results
 ```
 
-But then we don't get many of the benefits of having a master script in
+But by then we've nullified many of the benefits of having a master script in
 the first place.
 
 Another popular option is to comment out a subset of the lines in
@@ -290,12 +290,11 @@ tools, and it is worth considering other options, including:
 
 # Tutorial
 
-## Super simple Snakefile [15 minutes]
+## Writing and Running Snakefiles [10 minutes]
 
 Let's get started writing a description of our analysis for _Snakemake_.
 
-Open up a file called `Snakefile` in your editor of choice
-(e.g. `nano Snakefile`) and add the following:
+Open up a file called `Snakefile` in your editor and add the following:
 
 ```snakefile
 rule wordcount_isles:
@@ -307,24 +306,24 @@ rule wordcount_isles:
 We have now written the simplest, non-trivial snakefile.
 The `shell:` line is pretty reminiscent of one of the lines from our master
 script.
-I'm willing to bet that you can figure out what this snakefile does.
+I bet you can already see what this snakefile means.
 
 Let's walk through what we've written.
 The first line uses the keyword `rule` followed by the name of our rule:
 `wordcount_isles`.
 We end that line with a colon.
 All of the following lines in our rule are indented with four spaces.
-The second line says that it takes an input file, using the `input` keyword
-which is again followed by a colon.
-We then give it the path to the input file (`books/isles.txt`), wrapped in
+The second line says that it takes an input file, using the `input`
+keyword which is again followed by a colon.
+We then give it the path to this prerequisite (`books/isles.txt`), wrapped in
 quotes.
 The third line does the same thing with the output file (`isles.tsv`).
 And the last line is the exact shell command that we used in our shell script
-earlier.
+earlier to create the target output file.
 Like scripting, _Snakemake_ allows us to wrap a series of shell commands, but
-with more flexibility than a script allows.
+is more expressive and flexible than a script.
 
-Our snakefile describes a pipeline:
+Our snakefile describes a (very short) pipeline:
 
 1.  We are generating a file called `isles.tsv`
 2.  Creating this file requires `books/isles.txt`
@@ -346,7 +345,7 @@ let's use _Snakemake_ to execute it.
 First, remove the previously generated files.
 
 ```bash
-rm *.tsv *.png
+rm *.tsv *.png zipf_results.tgz
 ```
 
 ```bash
@@ -356,7 +355,20 @@ snakemake isles.tsv
 You should see the following print to the terminal:
 
 ```
-TODO
+Provided cores: 1
+Rules claiming more threads will be scaled down.
+Job counts:
+        count   jobs
+        1       wordcount_isles
+        1
+
+rule wordcount_isles:
+    input: books/isles.txt
+    output: isles.tsv
+    jobid: 0
+
+Finished job 0.
+1 of 1 steps (100%) done
 ```
 
 By default, _Snakemake_ prints a summary of the recipes that it
@@ -379,7 +391,7 @@ snakemake isles.tsv
 ```
 
 This time, instead of executing the same recipe,
-_Snakemake_ prints `TODO`
+_Snakemake_ prints `Nothing to be done.`
 
 What's happening here?
 
@@ -393,7 +405,7 @@ Much has been said about using modification times as the cue for remaking
 files.
 This can be another _Snakemake_ gotcha, so keep it in mind.
 
-If you want to induce the original behavior, you just have to
+If you want to induce the original behavior, you only have to
 change the modification time of `books/isles.txt` so that it is newer
 than `isles.tsv`.
 
@@ -404,13 +416,13 @@ snakemake isles.tsv
 
 The original behavior is restored.
 
-Sometimes you just want _Snakemake_ to tell you what it thinks about the
+Sometimes you only want _Snakemake_ to tell you what it thinks about the
 current state of your files.
-`TODO snakemake --dry-run isles.tsv` will print _Snakemake_'s execution plan,
+`snakemake --dryrun isles.tsv` will print _Snakemake_'s execution plan,
 without actually carrying it out.
-The flag can be abbreviated as `-n`.
+The flag can also be abbreviated as `-n`.
 
-If you don't pass a target as an argument to snakemake (i.e. just run
+If you don't pass a target as an argument to snakemake (i.e. run
 `snakemake`) it will assume that you want to build the first target in the
 snakefile.
 
@@ -451,8 +463,9 @@ rule archive_results:
         """
 ```
 
-Here the recipe for `zipf_results.tgz` involves running a series of
-shell commands.
+Here the recipe for `zipf_results.tgz` takes multiple input files,
+each of which must be quoted and separated by commas, and involves
+involves running a series of shell commands.
 When building the archive, _Snakemake_ will run each line successively unless
 any return an error.
 
@@ -487,7 +500,47 @@ You should get the something like the following output
 to your terminal:
 
 ```
-TODO
+Provided cores: 1
+Rules claiming more threads will be scaled down.
+Job counts:
+        count   jobs
+        1       archive_results
+        1       plotcount_abyss
+        1       plotcount_isles
+        1       wordcount_abyss
+        4
+
+rule wordcount_abyss:
+    input: books/abyss.txt
+    output: abyss.tsv
+    jobid: 1
+
+Finished job 1.
+1 of 4 steps (25%) done
+
+rule plotcount_abyss:
+    input: abyss.tsv
+    output: abyss.png
+    jobid: 4
+
+Finished job 4.
+2 of 4 steps (50%) done
+
+rule plotcount_isles:
+    input: isles.tsv
+    output: isles.png
+    jobid: 2
+
+Finished job 2.
+3 of 4 steps (75%) done
+
+rule archive_results:
+    input: isles.tsv, abyss.tsv, isles.png, abyss.png
+    output: zipf_results.tgz
+    jobid: 0
+
+Finished job 0.
+4 of 4 steps (100%) done
 ```
 
 Since you asked for `zipf_results.tgz` _Snakemake_ looked first for that file.
@@ -504,7 +557,7 @@ Once those were finished it was able to make `abyss.png` and
 
 ### Phony targets
 
-Sometimes its nice to have targets that don't refer to actual files.
+Sometimes we want to build a bunch of different files simultaneously.
 
 ```snakefile
 rule all:
@@ -530,6 +583,10 @@ rule clean:
 Running `snakemake clean` will now remove all of the cruft.
 
 ## Diagramming the DAG [5 minutes]
+
+(If you'd prefer not to bake this Snakefile from scratch, you can
+get one we've been hiding in the oven the whole time:
+`cp .extra/Snakefile.1 Snakefile`)
 
 Right now, our snakefile looks like this:
 
@@ -605,14 +662,12 @@ While earlier we took the time to diagram our DAG by hand, _Snakemake_
 has tools for plotting this network automatically.
 
 ```shell
-snakemake --dag | dot -Tpng > dag.png
+snakemake --dag zipf_results.tgz | dot -Tpng > dag.png
 ```
 
 Let's go to our Jupyter file browser and open that file.
 
-TODO
-
-## Don't repeat yourself [25 minutes]
+## Don't repeat yourself
 
 In many programming language, the bulk of the language features are there
 to allow the programmer to describe long-winded computational routines as
@@ -627,7 +682,12 @@ In _Snakemake_ a number of features are designed to minimize repetitive code.
 Our current snakefile does _not_ conform to this principle,
 but _Snakemake_ is perfectly capable of doing so.
 
-### Automatic variables (input output) [10 minutes]
+### Automatic variables [10 minutes]
+
+
+> #### Question
+>
+> What are some of the repetitive components of our snakefile?
 
 One overly repetitive part of our Snakefile:
 Inputs and outputs are in both the header _and_ the recipe of each rule.
@@ -715,12 +775,12 @@ before running the recipe.
 > repetition and take advantage of the "`{input}`" and "`{output}`"
 > placeholders.
 
-### Wildcard Filenames [15 minutes]
+### Wildcard Filenames [10 minutes]
 
 Another deviation from D.R.Y.:
 We have nearly identical recipes for `abyss.tsv` and `isles.tsv`.
 
-It turns out we can replace _both_ of those rules with just one rule,
+It turns out we can replace _both_ of those rules with a single rule,
 by telling _Snakemake_ about the relationships between filenames with
 _wildcards_.
 
@@ -748,9 +808,7 @@ This rule can be interpreted as:
 Notice how helpful the automatic input/output variables were here.
 This recipe will work no matter what stem is being matched!
 
-We can replace _both_ of the rules that matched this pattern
-(`abyss.tsv` and `isles.tsv`) with just one rule.
-Go ahead and do that in your snakefile.
+Go ahead and make this change in your snakefile.
 
 > #### Try it ####
 >
@@ -772,7 +830,10 @@ Go ahead and do that in your snakefile.
 > (i.e. `snakemake all` should plot the word counts and add the plots to
 > `zipf_results.tgz`)
 
-## Scripts as prerequisites [15 minutes] TODO
+(If you'd prefer a premade snakefile: `cp .extra/Snakefile.2 Snakefile`)
+
+
+## Scripts as prerequisites [10 minutes]
 
 We've talked a lot about the power of _Snakemake_ for
 rebuilding research outputs when input data changes.
@@ -798,27 +859,29 @@ to update our analysis with the new script.
 We're missing out on the benefits of incremental analysis when our scripts
 are changing too.
 
-There must be a better way...and there is!
-Scripts should be prerequisites too.
+There must be a better way...and there is.
+Scripts should be considered inputs too!
 
 Let's edit the rule for `{name}.png` to include `plotcount.py`
-as a prerequisites.
+as an input.
 
 ```snakefile
 rule plotcount:
-    input: "scripts/plotcount.py", "{name}.tsv"
+    input:
+        script="scripts/plotcount.py",
+        data="{name}.tsv"
     output: "{name}.png"
-    shell: "{input} {output}"
+    shell: "{input.script} {input.data} {output}"
 ```
 
-The input/output makes sense, but that's a strange looking recipe:
-just two automatic variables.
+Here we've assigned names to our two inputs.
 
-This recipe works because "`{input}`" is replaced with all of the
-prerequisites.  _In order_.
-When building `abyss.png`, for instance, '`{input} {output}`' becomes
-`scripts/plotcount.py abyss.tsv abyss.png`, which is actually exactly what we
-want.
+This recipe works because "`{input.script}`" is replaced with
+"`scripts/plotcount.py`"
+and "`{input.data}`" with the appropriate expansion of "`{name}.tsv`".
+When building `abyss.png`, for instance,
+"`{input.script} {input.data} {output}`" becomes
+"`scripts/plotcount.py abyss.tsv abyss.png`", which is exactly what we want.
 
 > #### Try it ####
 >
@@ -830,15 +893,18 @@ want.
 >
 > Update your other rules to include the relevant scripts as inputs.
 
+(Final snakefile: `cp .extra/Snakefile.3 Snakefile`)
+
 # Conclusion [1 minutes]
 
 I hope that I've convinced you of the value of _Snakemake_ for data analysis.
-What I have shown you today is only the absolute basics of functionality.
-_Snakemake_ is capable of much much more, and I encourage you to check out the
-website.
-For me though, the biggest benefit is in what we went over today:
-I can forget about script names
-and intermediate steps, and I can focus on the output files that I want.
+What I have shown you today barely scratches the surface of _Snakemake_
+functionality;
+I encourage you to check out the website.
+In my experience, though, the topics we've gone over today already provide
+90% of the benefit:
+we can forget about script names
+and intermediate steps, and focus instead on the output files that we want.
 This 'imperative' approach to analysis pipelines has transformed the way
 I do data analysis.
-I think you will find it as useful as I have.
+I think it can do the same for you.
