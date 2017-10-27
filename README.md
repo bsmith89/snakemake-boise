@@ -20,8 +20,6 @@ author: Byron J. Smith
 
 ---
 
-TODO: Test the lesson
-
 # Setup [0 minutes]
 
 Learners should install to their computers, or be provided with computers
