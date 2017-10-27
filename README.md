@@ -270,13 +270,13 @@ and a variety of scripting languages.
 _Snakemake_ comes from a lineage of computer programs&mdash;most notably
  _Make_&mdash;originally designed to
 automate the compilation and installation of software.
-_Snakemake_ is used to automate the process of building target files through a
-series of discrete steps.
-
-Despite it's original purpose, this design makes it a great fit for
-bioinformatics pipelines, which often work by transforming data from one form
+Programs like _Make_ automate the building of target files through a series of
+discrete steps.
+Despite the original purpose, this design makes it a great fit for
+bioinformatics pipelines, which usually work by transforming data from one form
 to another
 (e.g. _raw data_ &#8594; _word counts_ &#8594; _???_ &#8594; _profit_).
+
 
 _Snakemake_ is inspired by this approach, but designed specifically for
 computationally intensive and/or complex data analysis pipelines.
@@ -285,7 +285,11 @@ the basis for the _Snakemake_ syntax.
 You don't need to be an expert at _Python_ to use _Snakemake_, but it can
 sometimes be very useful.
 There are pros and cons to using _Snakemake_ versus any other analysis pipeline
-tools, and it is worth considering other options, as well.
+tools, and it is worth considering other options, including:
+
+-   _GNU Make_
+-   _doit_
+-   _Galaxy_
 
 # Tutorial
 
