@@ -75,11 +75,12 @@ The `tree` command produces a handy tree-diagram of the directory.
 │   ├── last.txt
 │   └── sierra.txt
 ├── matplotlibrc
+├── requirements.pip
 └── scripts
     ├── plotcount.py
     └── wordcount.py
 
-2 directories, 9 files
+2 directories, 10 files
 ```
 
 Here you see that we're starting with a well designed project directory.
