@@ -22,8 +22,6 @@ author: Byron J. Smith
 
 TODO: Test the lesson
 
-TODO: Pre-write the analysis script
-
 # Setup
 
 Learners should install to their computers, or be provided with computers
@@ -77,10 +75,11 @@ The `tree` command produces a handy tree-diagram of the directory.
 │   └── sierra.txt
 ├── matplotlibrc
 └── scripts
+    ├── analysis.sh
     ├── plotcount.py
     └── wordcount.py
 
-2 directories, 8 files
+2 directories, 9 files
 ```
 
 Here you see that we're starting with a well designed project directory.
@@ -194,13 +193,11 @@ Let's imagine that we adjusted the width of the bars in our plot
 produced by `plotcount.py`.
 
 ```bash
-nano plotcount.py
+nano scripts/plotcount.py
 # In the definition of plot_word_counts replace:
 #    width = 1.0
 # with:
 #    width = 0.8
-git add plotcount.py
-git commit -m "Fix the bar width."
 ```
 
 Now we want to recreate our figures.
