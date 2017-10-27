@@ -13,6 +13,6 @@ scripts/plotcount.py abyss.tsv abyss.png
 # Now archive the results in a tarball so we can share them with a colleague.
 rm -rf zipf_results
 mkdir zipf_results
-mv isles.tsv abyss.tsv isles.png abyss.png zipf_results/
+cp isles.tsv abyss.tsv isles.png abyss.png zipf_results/
 tar -czf zipf_results.tgz zipf_results
 rm -r zipf_results
