@@ -65,14 +65,33 @@ We've compiled our raw data, the books we want to analyze
 and have prepared several Python scripts that together make up our
 analysis pipeline.
 
-The first step is to count the frequency of each word in the book.
+The `tree` command produces a handy tree-diagram of the directory.
 
-```bash
-./wordcount.py books/isles.txt isles.tsv
+```
+.
+├── books
+│   ├── LICENSE_TEXTS.md
+│   ├── abyss.txt
+│   ├── isles.txt
+│   ├── last.txt
+│   └── sierra.txt
+├── matplotlibrc
+└── scripts
+    ├── plotcount.py
+    └── wordcount.py
+
+2 directories, 8 files
 ```
 
-(The leading '`./`' is required so that Bash knows we're executing
-a file in the current directory rather than a command in our path.)
+Here you see that we're starting with a well designed project directory.
+The raw data (books) are stored in their own directory, and scripts have
+informative names.
+
+The first step is to count the frequency of each word in a book.
+
+```bash
+scripts/wordcount.py books/isles.txt isles.tsv
+```
 
 Let's take a quick peek at the result.
 
@@ -97,14 +116,14 @@ number of words in the text file.
 We can do the same thing for a different book:
 
 ```bash
-./wordcount.py books/abyss.txt abyss.tsv
+scripts/wordcount.py books/abyss.txt abyss.tsv
 head -5 abyss.tsv
 ```
 
 Finally, let's visualize the results.
 
 ```bash
-./plotcount.py isles.tsv ascii
+scripts/plotcount.py isles.tsv ascii
 ```
 
 The `ascii` argument has been added so that we get a text-based
@@ -114,7 +133,7 @@ The script is also able to render a graphical bar-plot using matplotlib
 and save the figure to a given file.
 
 ```bash
-./plotcount.py isles.tsv isles.png
+scripts/plotcount.py isles.tsv isles.png
 ```
 
 Together these scripts implement a common workflow:
@@ -136,18 +155,18 @@ seconds.
 The most common solution to the tedium of data processing is to write
 a master script that runs the whole pipeline from start to finish.
 
-We can make a new file, `run_pipeline.sh` that contains:
+We can see such a script in `analysis.sh`, which contains:
 
 ```bash
 #!/usr/bin/env bash
-# USAGE: bash run_pipeline.sh
+# USAGE: bash analysis.sh
 # to produce plots for isles and abyss.
 
-./wordcount.py isles.txt isles.tsv
-./wordcount.py abyss.txt abyss.tsv
+scripts/wordcount.py books/isles.txt isles.tsv
+scripts/wordcount.py books/abyss.txt abyss.tsv
 
-./plotcount.py isles.tsv isles.png
-./plotcount.py abyss.tsv abyss.png
+scripts/plotcount.py isles.tsv isles.png
+scripts/plotcount.py abyss.tsv abyss.png
 
 # Now archive the results in a tarball so we can share them with a colleague.
 rm -rf zipf_results
@@ -161,7 +180,7 @@ This master script solved several problems in computational reproducibility:
 
 1.  It explicitly documents our pipeline,
     making communication with colleagues (and our future selves) more efficient.
-2.  It allows us to type a single command, `bash run_pipeline.sh`, to
+2.  It allows us to type a single command, `bash analysis.sh`, to
     reproduce the full analysis.
 3.  It prevents us from _repeating_ typos or mistakes.
     You might not get it right the first time, but once you fix something
@@ -185,7 +204,7 @@ git commit -m "Fix the bar width."
 ```
 
 Now we want to recreate our figures.
-We _could_ just `bash run_pipeline.sh` again.
+We _could_ just `bash analysis.sh` again.
 That would work, but it could also be a big pain if counting words takes
 more than a few seconds.
 The word counting routine hasn't changed; we shouldn't need to recreate
@@ -196,7 +215,7 @@ and recreate the tarball.
 
 ```bash
 for file in *.tsv; do
-    ./plotcount.py $file ${file/.tsv/.png}
+    scripts/plotcount.py $file ${file/.tsv/.png}
 done
 
 rm -rf zipf_results
@@ -210,19 +229,19 @@ But then we don't get many of the benefits of having a master script in
 the first place.
 
 Another popular option is to comment out a subset of the lines in
-`run_pipeline.sh`:
+`analysis.sh`:
 
 ```bash
 #!/usr/bin/env bash
-# USAGE: bash run_pipeline.sh
+# USAGE: bash analysis.sh
 # to produce plots for isles and abyss.
 
 # These lines are commented out because they don't need to be rerun.
-#./wordcount.py isles.txt isles.tsv
-#./wordcount.py abyss.txt abyss.tsv
+#scripts/wordcount.py isles.txt isles.tsv
+#scripts/wordcount.py abyss.txt abyss.tsv
 
-./plotcount.py isles.tsv isles.png
-./plotcount.py abyss.tsv abyss.png
+scripts/plotcount.py isles.tsv isles.png
+scripts/plotcount.py abyss.tsv abyss.png
 
 # Now archive the results in a tarball so we can share them with a colleague.
 rm -rf zipf_results
@@ -232,7 +251,7 @@ tar -czf zipf_results.tgz zipf_results
 rm -r zipf_results
 ```
 
-Followed by `bash run_pipeline.sh`.
+Followed by `bash analysis.sh`.
 
 But this process, and subsequently undoing it,
 can be a hassle and source of errors in complicated pipelines.
@@ -281,7 +300,7 @@ Open up a file called `Snakefile` in your editor of choice
 rule wordcount_isles:
     input: "books/isles.txt"
     output: "isles.tsv"
-    shell: "./wordcount.py books/isles.txt isles.tsv"
+    shell: "scripts/wordcount.py books/isles.txt isles.tsv"
 ```
 
 We have now written the simplest, non-trivial snakefile.
@@ -403,7 +422,7 @@ we can add a rule for plotting those results.
 rule plotcount_isles:
     input: "isles.tsv"
     output: "isles.png"
-    shell: "./plotcount.py isles.tsv isles.png"
+    shell: "scripts/plotcount.py isles.tsv isles.png"
 ```
 
 The dependency graph now looks like:
@@ -416,7 +435,7 @@ Let's add a few more recipes to our Snakefile.
 rule wordcount_abyss:
     input: "books/abyss.txt"
     output: "abyss.tsv"
-    shell: "./wordcount.py books/abyss.txt abyss.tsv"
+    shell: "scripts/wordcount.py books/abyss.txt abyss.tsv"
 
 rule archive_results:
     input: "isles.tsv", "abyss.tsv", "isles.png", "abyss.png"
@@ -525,23 +544,23 @@ rule clean:
 rule wordcount_isles:
     input: "books/isles.txt"
     output: "isles.tsv"
-    shell: "./wordcount.py books/isles.txt isles.tsv"
+    shell: "scripts/wordcount.py books/isles.txt isles.tsv"
 
 rule wordcount_abyss:
     input: "books/abyss.txt"
     output: "abyss.tsv"
-    shell: "./wordcount.py books/abyss.txt abyss.tsv"
+    shell: "scripts/wordcount.py books/abyss.txt abyss.tsv"
 
 # Plotting
 rule plotcount_isles:
     input: "isles.tsv"
     output: "isles.png"
-    shell: "./plotcount.py isles.tsv isles.png"
+    shell: "scripts/plotcount.py isles.tsv isles.png"
 
 rule plotcount_abyss:
     input: "abyss.tsv"
     output: "abyss.png"
-    shell: "./plotcount.py abyss.tsv abyss.png"
+    shell: "scripts/plotcount.py abyss.tsv abyss.png"
 
 # Deliverables
 rule archive_results:
@@ -618,7 +637,7 @@ It turns out, that
 rule wordcount_isles:
     input: "books/isles.txt"
     output: "isles.tsv"
-    shell: "./wordcount.py books/isles.txt isles.tsv"
+    shell: "scripts/wordcount.py books/isles.txt isles.tsv"
 ```
 
 Can be rewritten as
@@ -627,7 +646,7 @@ Can be rewritten as
 rule wordcount_isles:
     input: "books/isles.txt"
     output: "isles.tsv"
-    shell: "./wordcount.py {input} {output}"
+    shell: "scripts/wordcount.py {input} {output}"
 ```
 
 Here we've replaced the input "`books/isles.txt`" in the recipe
@@ -710,7 +729,7 @@ Using wildcards looks like this
 rule wordcount:
     input: "books/{name}.txt"
     output: "{name}.tsv"
-    shell: "./wordcount.py {input} {output}"
+    shell: "scripts/wordcount.py {input} {output}"
 ```
 
 Here we've replaced the book name with "`{name}`".
@@ -723,7 +742,7 @@ This rule can be interpreted as:
 
 > In order to build a file named `[something].tsv` (the target)
 > find a file named `books/[that same something].txt` (the prerequisite)
-> and run `./wordcount.py [the prerequisite] [the target]`.
+> and run `scripts/wordcount.py [the prerequisite] [the target]`.
 
 Notice how helpful the automatic input/output variables were here.
 This recipe will work no matter what stem is being matched!
@@ -786,9 +805,9 @@ as a prerequisites.
 
 ```snakefile
 rule plotcount:
-    input: "plotcount.py", "{name}.tsv"
+    input: "scripts/plotcount.py", "{name}.tsv"
     output: "{name}.png"
-    shell: "./{input} {output}"
+    shell: "{input} {output}"
 ```
 
 The input/output makes sense, but that's a strange looking recipe:
@@ -796,11 +815,9 @@ just two automatic variables.
 
 This recipe works because "`{input}`" is replaced with all of the
 prerequisites.  _In order_.
-When building `abyss.png`, for instance, '`./{input} {output}`' becomes
-`./plotcount.py abyss.tsv abyss.png`, which is actually exactly what we want.
-
-(Remember that we need the leading '`./`' so that Bash knows we're executing
-a file in the current directory and not a command in our path.)
+When building `abyss.png`, for instance, '`{input} {output}`' becomes
+`scripts/plotcount.py abyss.tsv abyss.png`, which is actually exactly what we
+want.
 
 > #### Try it ####
 >
