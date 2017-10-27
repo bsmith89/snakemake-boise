@@ -31,7 +31,7 @@ that have:
     -   `nano`
     -   `make`
     -   `dot`
--   Python 3.5+ and the following packages
+-   Python 3.6 and the following packages
     -   snakemake
     -   matplotlib
     -   numpy
