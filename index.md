@@ -35,16 +35,10 @@ that have:
     -   snakemake
     -   matplotlib
     -   numpy
--   In the working directory a file named `matplotlibrc` containing just one
-    line:
+-   [This example directory][example-dir] should be downloaded to the users
+    home directory, or similar.
 
-    ```
-    backend:agg
-    ```
--   The scripts `plotcount.py` and `wordcount.py`.
--   And a directory `books/` containing `abyss.txt`, `isles.txt`, `last.txt`,
-    and `sierra.txt`.
--   A pre-written shell script `analysis.sh`.
+[example-dir]: https://github.com/bsmith89/snakemake-boise/tree/master/example
 
 # Motivation
 
