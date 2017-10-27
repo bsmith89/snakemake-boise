@@ -7,15 +7,19 @@ rule clean:
 
 # Analysis
 rule wordcount:
-    input: "books/{name}.txt"
+    input:
+        script="scripts/wordcount.py",
+        data="books/{name}.txt"
     output: "{name}.tsv"
-    shell: "scripts/wordcount.py {input} {output}"
+    shell: "{input.script} {input.data} {output}"
 
 # Plotting
 rule plotcount:
-    input: "{name}.tsv"
+    input:
+        script="scripts/plotcount.py",
+        data="{name}.tsv"
     output: "{name}.png"
-    shell: "scripts/plotcount.py {input} {output}"
+    shell: "{input.script} {input.data} {output}"
 
 # Deliverables
 rule archive_results:
