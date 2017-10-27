@@ -1,3 +1,9 @@
+rule all:
+    input:
+
+rule clean:
+    shell: "rm --force *.html *.pdf"
+
 rule make_pdf:
     input: "{name}.md"
     params:
