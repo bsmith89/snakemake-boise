@@ -31,6 +31,7 @@ that have:
     -   `nano`
     -   `make`
     -   `dot`
+    -   `tree`
 -   Python 3.6 and the following packages
     -   snakemake
     -   matplotlib
@@ -38,7 +39,7 @@ that have:
 -   [This example directory][example-dir] should be downloaded to the users
     home directory, or similar.
 
-[example-dir]: https://github.com/bsmith89/snakemake-boise/tree/master/example
+[example-dir]: https://github.com/bsmith89/zipf_example
 
 # Motivation
 
@@ -201,7 +202,7 @@ The word counting routine hasn't changed; we shouldn't need to recreate
 those files.
 
 Alternatively, we could manually rerun the plotting for each word-count file
-and recreate the tarball.
+and recreate the archive.
 
 ```bash
 for file in *.tsv; do
@@ -501,7 +502,8 @@ Job counts:
         1       plotcount_abyss
         1       plotcount_isles
         1       wordcount_abyss
-        4
+        1       wordcount_isles
+        5
 
 rule wordcount_abyss:
     input: books/abyss.txt
@@ -509,7 +511,15 @@ rule wordcount_abyss:
     jobid: 1
 
 Finished job 1.
-1 of 4 steps (25%) done
+1 of 5 steps (20%) done
+
+rule wordcount_isles:
+    input: books/abyss.txt
+    output: abyss.tsv
+    jobid: 2
+
+Finished job 2.
+2 of 5 steps (40%) done
 
 rule plotcount_abyss:
     input: abyss.tsv
@@ -517,15 +527,15 @@ rule plotcount_abyss:
     jobid: 4
 
 Finished job 4.
-2 of 4 steps (50%) done
+3 of 5 steps (60%) done
 
 rule plotcount_isles:
     input: isles.tsv
     output: isles.png
-    jobid: 2
+    jobid: 3
 
-Finished job 2.
-3 of 4 steps (75%) done
+Finished job 3.
+4 of 5 steps (80%) done
 
 rule archive_results:
     input: isles.tsv, abyss.tsv, isles.png, abyss.png
@@ -533,7 +543,7 @@ rule archive_results:
     jobid: 0
 
 Finished job 0.
-4 of 4 steps (100%) done
+5 of 5 steps (100%) done
 ```
 
 Since you asked for `zipf_results.tgz` _Snakemake_ looked first for that file.
@@ -547,6 +557,25 @@ Once those were finished it was able to make `abyss.png` and
 >
 > What happens if you `touch abyss.tsv` and
 > then `snakemake zipf_results.tgz`?
+
+## Running Snakemake in parallel
+
+And check this out!
+
+```bash
+snakemake clean
+snakemake --threads 2
+```
+
+Did you see it?
+The `--threads 2` flag (just "`-j2`" works too) tells _Make_ to run recipes in
+two _parallel_ threads.
+Our dependency graph clearly shows that
+`abyss.tsv` and `isles.tsv` are mutually independent and can
+both be built at the same time.
+Likewise for `abyss.png` and `isles.png`.
+If you've got a bunch of independent branches in your analysis, this can
+greatly speed up your build process.
 
 ### Phony targets
 
@@ -658,7 +687,7 @@ has tools for plotting this network automatically.
 snakemake --dag zipf_results.tgz | dot -Tpng > dag.png
 ```
 
-Let's go to our Jupyter file browser and open that file.
+Open that file and check it out.
 
 ## Don't repeat yourself
 
@@ -893,7 +922,7 @@ When building `abyss.png`, for instance,
 I hope that I've convinced you of the value of _Snakemake_ for data analysis.
 What I have shown you today barely scratches the surface of _Snakemake_
 functionality;
-I encourage you to check out the website.
+I encourage you to check out the [website][snakemake-site].
 In my experience, though, the topics we've gone over today already provide
 90% of the benefit:
 we can forget about script names
@@ -901,3 +930,5 @@ and intermediate steps, and focus instead on the output files that we want.
 This 'imperative' approach to analysis pipelines has transformed the way
 I do data analysis.
 I think it can do the same for you.
+
+[snakemake-site]: https://snakemake.readthedocs.io
