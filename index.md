@@ -39,7 +39,7 @@ that have:
 -   [This example directory][example-dir] should be downloaded to the users
     home directory, or similar.
 
-[example-dir]: https://github.com/bsmith89/zipf_example
+[example-dir]: https://github.com/bsmith89/zipf-example
 
 # Motivation
 
